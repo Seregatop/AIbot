@@ -1,10 +1,31 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import CommandStart
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+
+from app.generators import gpt_text
 
 user = Router()
 
 
-@user.message(CommandStart)
+class Work(StatesGroup):
+    process = State()
+
+
+@user.message(CommandStart())
 async def cmd_start(message: Message):
-    await message.answer('Ого!')
+    await message.answer('Ого!!!')
+
+
+@user.message(Work.process)
+async def stop(massage: Message):
+    await massage.answer('Погоди!!!')
+
+
+@user.message()
+async def ai(massage: Message, state: FSMContext):
+    await state.set_state(Work.process)
+    res = await gpt_text(massage.text, model='open-mistral-7b')
+    await massage.answer(res)
+    await state.clear()
