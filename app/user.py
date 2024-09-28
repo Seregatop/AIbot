@@ -15,12 +15,12 @@ class Work(StatesGroup):
 
 @user.message(CommandStart())
 async def cmd_start(message: Message):
-    await message.answer('Ого!!!')
+    await message.answer('Привет!!! Я бот с искусственным интеллектом. Напиши сообщение и я отвечу на него)')
 
 
 @user.message(Work.process)
 async def stop(massage: Message):
-    await massage.answer('Погоди!!!')
+    await massage.answer('Не так быстро, дай мне придумать ответ!')
 
 
 @user.message()
