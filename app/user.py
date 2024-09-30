@@ -26,6 +26,6 @@ async def stop(massage: Message):
 @user.message()
 async def ai(massage: Message, state: FSMContext):
     await state.set_state(Work.process)
-    res = await gpt_text(massage.text, model='open-mistral-7b')
+    res = await gpt_text(massage.text, model='gpt-4o-mini')
     await massage.answer(res)
     await state.clear()
