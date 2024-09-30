@@ -1,3 +1,5 @@
+from sqlalchemy import BigInteger
+
 from app.database.models import async_session
 from app.database.models import User, AIModel, AIType, Order
 from sqlalchemy import select, update, delete, desc
@@ -6,22 +8,27 @@ from decimal import Decimal
 
 def connection(func):
     async def inner(*args, **kwargs):
-        async with async_session as session:
+        async with async_session() as session:
             return await func(session, *args, **kwargs)
-    return inner()
+    return inner
 
 
 @connection
-async def set_user(session, tg_id):
+async def set_user(session, tg_id: BigInteger):
     user = await session.scalar(select(User).where(User.tg_id == tg_id))
     if not user:
-        session.add(User(tg_id=tg_id, balance='0'))
+        session.add(User(tg_id=tg_id, balance='0.1'))
         await session.commit()
 
 
 @connection
-async def get_user(session, tg_id):
+async def get_user(session, tg_id: BigInteger):
     return await session.scalar(select(User).where(User.tg_id == tg_id))
+
+
+@connection
+async def get_users(session):
+    return await session.scalars(select(User))
 
 
 @connection

@@ -1,19 +1,21 @@
 # from mistralai import Mistral
-import base64
-
-import aiofiles
-import aiohttp
+import asyncio
 import httpx
 from openai import AsyncOpenAI
+
+import base64
+import aiohttp
+import aiofiles
 
 from config import AITOKEN, PROXY
 
 client = AsyncOpenAI(api_key=AITOKEN,
                      http_client=httpx.AsyncClient(
-                         proxies=PROXY,
-                         transport=httpx.HTTPTransport(
-                             local_address="0.0.0.0"))
+                        proxies=PROXY,
+                        transport=httpx.HTTPTransport(
+                            local_address="0.0.0.0"))
                      )
+
 
 async def gpt_text(req, model):
     completion = await client.chat.completions.create(
@@ -43,7 +45,6 @@ async def encode_image(image_path):
 
 
 async def gpt_vision(req, model, file):
-    # Getting the base64 string
     base64_image = await encode_image(file)
 
     headers = {
@@ -69,15 +70,15 @@ async def gpt_vision(req, model, file):
         "max_tokens": 300
     }
 
-    if req is None:
-        payload['messages'][0]['content'].append({
-                        "type": "text",
-                        "text": req
-                    })
+    if req is not None:
+        payload["messages"][0]['content'].append({
+            "type": "text",
+            "text": req,
+        })
 
-    async with (aiohttp.ClientSession() as session):
-        async with session.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload
-                                ) as response:
+    async with aiohttp.ClientSession() as session:
+        async with session.post("https://api.openai.com/v1/chat/completions", headers=headers,
+                                json=payload) as response:
             completion = await response.json()
             print(completion)
     return {'response': completion['choices'][0]['message']['content'],
