@@ -10,11 +10,8 @@ import aiofiles
 from config import AITOKEN, PROXY
 
 client = AsyncOpenAI(api_key=AITOKEN,
-                     http_client=httpx.AsyncClient(
-                        proxies=PROXY,
-                        transport=httpx.HTTPTransport(
-                            local_address="0.0.0.0"))
-                     )
+                     http_client=httpx.AsyncClient(proxies=PROXY,
+                                                   transport=httpx.HTTPTransport(local_address="0.0.0.0")))
 
 
 async def gpt_text(req, model):
@@ -81,5 +78,9 @@ async def gpt_vision(req, model, file):
                                 json=payload) as response:
             completion = await response.json()
             print(completion)
-    return {'response': completion['choices'][0]['message']['content'],
-            'usage': completion['usage']['total_tokens']}
+    try:
+        return {'response': completion['message'][0]['message']['content'],
+                'usage': completion['usage']['total_tokens']}
+    except:
+        return {'response': completion['error']['message'],
+                'usage': 0}
