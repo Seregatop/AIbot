@@ -15,11 +15,30 @@ import os
 user = Router()
 
 
+"""
+def positive_balance(func):
+    async def inner(*args, **kwargs):
+        user_db = await get_user(message.from_user.id)
+        if Decimal(user_db.balance) > 0:
+            return func(*args, **kwargs)
+        else:
+            await message.answer('Недостаточно средств на балансе')
+    return inner
+"""
+
+
 @user.message(F.text == 'Отмена')
+async def cancel(message: Message, state: FSMContext):
+    await set_user(message.from_user.id)
+    await message.answer('Выберите один из вариантов меню',
+                         reply_markup=kb.main)
+    await state.clear()
+
+
 @user.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext):
     await set_user(message.from_user.id)
-    await message.answer('Привет!!! Я бот с искусственным интеллектом. Напиши сообщение и я отвечу на него)',
+    await message.answer('Я бот с искусственным интеллектом. Выберите один из вариантов меню',
                          reply_markup=kb.main)
     await state.clear()
 
@@ -43,7 +62,7 @@ async def chat_response(message: Message, state: FSMContext):
         file_path = file.file_path
         file_name = uuid.uuid4()
         await message.bot.download_file(file_path, f'{file_name}.jpeg')
-        response = await gpt_vision(message.caption, 'gpt-4o', f'{file_name}.jpeg')
+        response = await gpt_vision(message.caption, 'gpt-4o-mini', f'{file_name}.jpeg')
         await calculate(message.from_user.id, response['usage'], 'gpt-4o', user_db)
         await message.answer(response['response'])
         await state.set_state(Chat.text)
